@@ -1,4 +1,9 @@
 import fnmatch
+from os.path import exists
+
+
+class FilterError(Exception):
+	pass
 
 
 class Filter:
@@ -24,12 +29,13 @@ class Filter:
 
 		return pattern_list
 
+
 	def filter(self, name):
 		result = None
-		if len(self._include_list) > 0 and not any([fnmatch.filter(name, p) for p in self._include_list]):
+		if len(self._include_list) > 0 and not any([fnmatch.fnmatch(name, p) for p in self._include_list]):
 			return False
 
-		if any([fnmatch.filter(name, p) for p in self._exclude_list]):
+		if any([fnmatch.fnmatch(name, p) for p in self._exclude_list]):
 			return False
 
 		return True
@@ -37,5 +43,4 @@ class Filter:
 
 	def filter_list(self, names):
 		return [n for n in names if self.filter(n)]
-
 
