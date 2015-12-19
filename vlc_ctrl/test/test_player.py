@@ -1,6 +1,8 @@
 from unittest import TestCase, main as ut_main
+from os.path import join as joinpath
 
 from vlc_ctrl.player import Player
+from vlc_ctrl.filter import Filter
 
 
 class TestPlayer(TestCase):
@@ -26,6 +28,17 @@ class TestPlayer(TestCase):
 	def test_metadata(self):
 		player = Player()
 		print player.track_info()
+
+
+	def test_add(self):
+		player = Player()
+
+		path = '/home/BIG/music/trance'
+		filter = Filter(exclude_file=joinpath(path, 'exclude'), random=True)
+
+		player.add(path, filter)
+
+
 
 
 if __name__ == '__main__':

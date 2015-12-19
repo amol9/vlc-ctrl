@@ -6,7 +6,7 @@ class FilterError(Exception):
 	pass
 
 
-class Filter:
+class Filter(object):
 
 	def __init__(self, include=None, exclude=None, include_file=None, exclude_file=None, random=False, playtime=None):
 		self._include_list 	= self.load(include, include_file)
@@ -43,4 +43,15 @@ class Filter:
 
 	def filter_list(self, names):
 		return [n for n in names if self.filter(n)]
+
+
+	def get_random(self):
+		return self._random
+
+
+	def set_random(self, value):
+		self._random = value
+
+
+	random=property(get_random, set_random)
 

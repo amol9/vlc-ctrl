@@ -1,5 +1,4 @@
 
-
 from redcmd import Subcommand, subcmd, CommandLine, CommandLineError
 
 from .player import Player

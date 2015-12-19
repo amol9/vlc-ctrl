@@ -2,6 +2,9 @@ import dbus
 from time import sleep
 from urlparse import unquote
 import random
+from os.path import join as joinpath, exists, isdir, isfile
+import os
+import mimetypes
 
 from redlib.system import CronDBus, CronDBusError, in_cron
 
@@ -25,6 +28,8 @@ class Player(object):
 
 		self.setup_crondbus()
 		self.get_dbus_interface()
+
+		self._mime_types = None
 
 
 	def setup_crondbus(self):
@@ -55,24 +60,37 @@ class Player(object):
 			raise PlayerError('no such path: %s'%path)
 
 		if isfile(path):
-			self._tracklist.AddTrack('file://' + path, self.obj_no_track, True)
+			if self.mime_type_supported(path):
+				self._tracklist.AddTrack('file://' + path, self.obj_no_track, True)
+			return
 
 		elif isdir(path):
 			if filter.random:
 				choices = []
-				for root, dirs, files in os.walk(path)
+				for root, dirs, files in os.walk(path):
 					choices.extend(filter.filter_list(dirs))
 					choices.extend(filter.filter_list(files))
 					break
 
 				path = joinpath(path, random.choice(choices))
 				filter.random = False
+				print "random selection: ", path
 				self.add(path, filter)
+				return
 
-			for root, _, files in os.walk(path):
-				for f in files:
-					if filter.filter(f):
-						self._tracklist.AddTrack('file://' + joinpath(root, f), self.obj_no_track, True)
+		for root, _, files in os.walk(path):
+			for f in files:
+				if filter.filter(f):
+					self.add(joinpath(root, f), None)
+
+
+	def mime_type_supported(self, filename):
+		if self._mime_types is None:
+			self._mime_types = self.get_prop('SupportedMimeTypes', self.main_interface)
+	
+		if mimetypes.guess_type(filename)[0] in self._mime_types:
+			return True
+		return False
 
 
 	def jump(self, pattern):
@@ -95,12 +113,15 @@ class Player(object):
 		self._player.Next()
 
 
-	def get_prop(self, name):
-		return self._prop.Get(self.dbus_interface, name)
+	def get_prop(self, name, iface=None):
+		if iface is None:
+			iface = self.player_interface
+
+		return self._prop.Get(iface, name)
 
 
 	def set_prop(self, name, value):
-		return self._prop.Set(self.dbus_interface, name, value)
+		return self._prop.Set(self.player_interface, name, value)
 
 
 	def get_volume(self):
@@ -157,7 +178,7 @@ class Player(object):
 		self._main.Quit()		
 
 
-	def del(self):
+	def __del__(self):
 		if self._crondbus is not None:
 			self._crondbus.remove()
 
