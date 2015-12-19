@@ -39,6 +39,19 @@ class TestPlayer(TestCase):
 		player.add(path, filter)
 
 
+	def test_launch(self):
+		player = Player()
+		player.launch()
+
+
+	def test_quit(self):
+		player = Player()
+		player.quit(None, (1, 0), 5)
+
+
+	def test_quit_condition(self):
+		player = Player()
+		player.quit("grep test123 a.txt", (10, 10), 5)
 
 
 if __name__ == '__main__':

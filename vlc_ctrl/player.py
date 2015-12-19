@@ -1,4 +1,5 @@
 import dbus
+from dbus import DBusException
 from time import sleep
 from urlparse import unquote
 import random
@@ -6,7 +7,12 @@ from os.path import join as joinpath, exists, isdir, isfile
 import os
 import mimetypes
 
-from redlib.system import CronDBus, CronDBusError, in_cron
+from redlib.system import CronDBus, CronDBusError, in_cron, sys_command
+from redlib.misc import Retry
+
+
+class PlayerError(Exception):
+	pass
 
 
 class Player(object):
@@ -39,12 +45,21 @@ class Player(object):
 
 
 	def get_dbus_interface(self):
-		player_obj = dbus.SessionBus().get_object(self.service_name, self.object_path)
+		try:
+			player_obj = dbus.SessionBus().get_object(self.service_name, self.object_path)
+		except DBusException as e:
+			print(e)
+			raise PlayerError('vlc is not running')
 
 		self._player 	= dbus.Interface(player_obj, dbus_interface=self.player_interface)
 		self._tracklist = dbus.Interface(player_obj, dbus_interface=self.tracklist_interface)
 		self._prop 	= dbus.Interface(player_obj, dbus_interface=self.prop_interface)
 		self._main 	= dbus.Interface(player_obj, dbus_interface=self.main_interface)
+
+
+	def launch(self):
+		#try:
+		os.spawnl(os.P_NOWAIT, 'vlc')
 
 	
 	def play(self, path, filter):
@@ -155,23 +170,24 @@ class Player(object):
 		return info
 		
 
-	def start(self, path, exclude):
-		pass
+	def stop(self):
+		self._player.Stop()
 
 
 	def quit(self, condition, retry, fade):
-		r = Retry(retries=retry[0], delay=[1])
+		if condition is not None:
+			r = Retry(retries=retry[0], delay=retry[1], exp_bkf=False)
 
-		while r.left():
-			rc, _ = sys_command(condition)
-			if rc == 0:
-				r.cancel()
-			else:
-				r.retry()
+			while r.left():
+				rc, _ = sys_command(condition)
+				if rc == 0:
+					r.cancel()
+				else:
+					r.retry()
 
 		if fade > 0:
 			saved_volume = self.volume
-			self.volume_fade(0, fade)
+			self.fade_volume(0, fade)
 			self.stop()
 			self.volume = saved_volume
 
