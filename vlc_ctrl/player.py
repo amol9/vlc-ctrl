@@ -1,27 +1,81 @@
 import dbus
 from time import sleep
 from urlparse import unquote
+import random
+
+from redlib.system import CronDBus, CronDBusError, in_cron
 
 
 class Player(object):
-	service_name 	= 'org.mpris.MediaPlayer2.vlc'
-	object_path 	= '/org/mpris/MediaPlayer2'
-	dbus_interface 	= 'org.mpris.MediaPlayer2.Player'
-	prop_interface	= 'org.freedesktop.DBus.Properties'
+	service_name 		= 'org.mpris.MediaPlayer2.vlc'
+	object_path 		= '/org/mpris/MediaPlayer2'
+
+	main_interface 		= 'org.mpris.MediaPlayer2'
+	player_interface 	= 'org.mpris.MediaPlayer2.Player'
+	tracklist_interface 	= 'org.mpris.MediaPlayer2.TrackList'
+	prop_interface		= 'org.freedesktop.DBus.Properties'
+
+	obj_no_track		= '/org/mpris/MediaPlayer2/TrackList/NoTrack'
 
 	def __init__(self):
-		self._player = None
-		self._prop = None
+		self._player 	= None
+		self._prop 	= None
+		self._crondbus 	= None
+		self._tracklist = None
+
+		self.setup_crondbus()
 		self.get_dbus_interface()
+
+
+	def setup_crondbus(self):
+		if in_cron():
+			self._crondbus = CronDBus()
+			self._crondbus.setup()
 
 
 	def get_dbus_interface(self):
 		player_obj = dbus.SessionBus().get_object(self.service_name, self.object_path)
-		self._player = dbus.Interface(player_obj, dbus_interface=self.dbus_interface)
-		self._prop = dbus.Interface(player_obj, dbus_interface=self.prop_interface)
+
+		self._player 	= dbus.Interface(player_obj, dbus_interface=self.player_interface)
+		self._tracklist = dbus.Interface(player_obj, dbus_interface=self.tracklist_interface)
+		self._prop 	= dbus.Interface(player_obj, dbus_interface=self.prop_interface)
+		self._main 	= dbus.Interface(player_obj, dbus_interface=self.main_interface)
 
 	
-	def play(self):
+	def play(self, path, filter):
+		if path is None:
+			self._player.Play()
+			return
+
+		self.add(path, filter)
+
+			
+	def add(self, path, filter):
+		if not exists(path):
+			raise PlayerError('no such path: %s'%path)
+
+		if isfile(path):
+			self._tracklist.AddTrack('file://' + path, self.obj_no_track, True)
+
+		elif isdir(path):
+			if filter.random:
+				choices = []
+				for root, dirs, files in os.walk(path)
+					choices.extend(filter.filter_list(dirs))
+					choices.extend(filter.filter_list(files))
+					break
+
+				path = joinpath(path, random.choice(choices))
+				filter.random = False
+				self.add(path, filter)
+
+			for root, _, files in os.walk(path):
+				for f in files:
+					if filter.filter(f):
+						self._tracklist.AddTrack('file://' + joinpath(root, f), self.obj_no_track, True)
+
+
+	def jump(self, pattern):
 		pass
 
 
@@ -31,6 +85,14 @@ class Player(object):
 
 	def toggle(self):
 		self._player.PlayPause()
+
+
+	def prev(self):
+		self._player.Previous()
+
+
+	def next(self):
+		self._player.Next()
 
 
 	def get_prop(self, name):
@@ -72,6 +134,32 @@ class Player(object):
 		return info
 		
 
+	def start(self, path, exclude):
+		pass
+
+
+	def quit(self, condition, retry, fade):
+		r = Retry(retries=retry[0], delay=[1])
+
+		while r.left():
+			rc, _ = sys_command(condition)
+			if rc == 0:
+				r.cancel()
+			else:
+				r.retry()
+
+		if fade > 0:
+			saved_volume = self.volume
+			self.volume_fade(0, fade)
+			self.stop()
+			self.volume = saved_volume
+
+		self._main.Quit()		
+
+
+	def del(self):
+		if self._crondbus is not None:
+			self._crondbus.remove()
 
 
 	volume=property(get_volume, set_volume)

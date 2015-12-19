@@ -16,7 +16,11 @@ Supported platforms
 Features
 ========
 
-* Schedule the change of wallpaper.
+* Controls vlc player over dbus.
+* Play / pause / toggle / etc.
+* Change volume / fade volume.
+* Print current track info.
+* Can be used as a cron job.
 
 
 Usage
