@@ -6,8 +6,9 @@ import random
 from os.path import join as joinpath, exists, isdir, isfile
 import os
 import mimetypes
+from subprocess import Popen
 
-from redlib.system import CronDBus, CronDBusError, in_cron, sys_command
+from redlib.system import CronDBus, CronDBusError, in_cron, sys_command, DEVNULL
 from redlib.misc import Retry
 
 
@@ -33,7 +34,7 @@ class Player(object):
 		self._tracklist = None
 
 		self.setup_crondbus()
-		self.get_dbus_interface()
+		#self.get_dbus_interface()
 
 		self._mime_types = None
 
@@ -58,8 +59,11 @@ class Player(object):
 
 
 	def launch(self):
-		#try:
-		os.spawnl(os.P_NOWAIT, 'vlc')
+		try:
+			r = Popen(['vlc'], stdout=DEVNULL, stderr=DEVNULL)
+		except OSError as e:
+			print(e)
+			raise PlayerError("cannot launch vlc, may be it's not installed")
 
 	
 	def play(self, path, filter):
@@ -149,6 +153,11 @@ class Player(object):
 	
 	def fade_volume(self, target, time):
 		steps = int(time / 0.1)
+
+		if steps == 0:
+			self.set_volume(target)
+			return
+
 		delta = (self.volume - target) / steps
 		print steps, delta
 		for _ in range(0, steps):
