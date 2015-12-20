@@ -1,7 +1,7 @@
 import dbus
 from dbus import DBusException
 from time import sleep
-from urlparse import unquote
+from six.moves.urllib.parse import unquote
 import random
 from os.path import join as joinpath, exists, isdir, isfile
 import os
@@ -93,7 +93,6 @@ class Player(object):
 
 				path = joinpath(path, random.choice(choices))
 				filter.random = False
-				print "random selection: ", path
 				self.add(path, filter)
 				return
 
@@ -162,7 +161,6 @@ class Player(object):
 			return
 
 		delta = (self.volume - target) / steps
-		print steps, delta
 		for _ in range(0, steps):
 			self.volume -= delta
 			sleep(0.1)

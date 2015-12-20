@@ -9,9 +9,7 @@ from vlc-ctrl.version import __version__
 
 
 entry_points = {}
-entry_points['console_scripts'] = ['wallp=wallp.client.main:main']
-if platform.system() == 'Windows':
-	entry_points['gui_scripts'] = ['wallps=wallp.client.main:main']
+entry_points['console_scripts'] = ['vlc-ctrl=vlc_ctrl.main:main']
 
 
 setup(	
@@ -25,17 +23,19 @@ setup(
 	include_package_data	= True,
 	scripts			= ['ez_setup.py'],
 	entry_points 		= entry_points,
-	install_requires	= ['redlib', 'redcmd', 'dbus'],
+	install_requires	= ['redlib', 'redcmd', 'six'],
 	classifiers		= [
 					'Development Status :: 4 - Beta',
 					'Environment :: Console',
 					'License :: OSI Approved :: MIT License',
 					'Natural Language :: English',
 					'Operating System :: POSIX :: Linux',
-					'Operating System :: Microsoft :: Windows',
 					'Programming Language :: Python :: 2.7',
-					'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-					'Topic :: Multimedia :: Graphics'
+					'Programming Language :: Python :: 3.4',
+					'Topic :: Multimedia :: Sound/Audio',
+					'Topic :: Multimedia :: Sound/Audio :: Players',
+					'Topic :: Multimedia :: Sound/Audio :: Players :: MP3',
+					'Topic :: Multimedia :: Video'
 				]
 )
 
