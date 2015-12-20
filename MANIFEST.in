@@ -1,0 +1,1 @@
+recursive-exclude vlc_ctrl/test *

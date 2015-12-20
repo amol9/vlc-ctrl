@@ -181,7 +181,7 @@ class Player(object):
 		info['title'] 	= unc(mget('xesam:title'))
 		info['artist'] 	= unc(mget('xesam:artist')[0]) if mget('xesam:artist') is not None and len(mget('xesam:artist')) > 0 else None
 		info['length'] 	= unc(str(int(mget('vlc:length') / 1000))) if mget('vlc:length') is not None else None
-		info['path']	= unquote(unc(mget('xesam:url')))
+		info['path']	= unc(unquote(mget('xesam:url')))
 		info['genre'] 	= unc(mget('xesam:genre')[0]) if mget('xesam:genre') is not None and len(mget('xesam:genre')) > 0 else None
 
 		return info

@@ -5,7 +5,7 @@ import platform
 import sys
 from setuptools import setup, find_packages
 
-from vlc-ctrl.version import __version__
+from vlc_ctrl.version import __version__
 
 
 entry_points = {}
@@ -19,7 +19,7 @@ setup(
 	author			= 'Amol Umrale',
 	author_email 		= 'babaiscool@gmail.com',
 	url			= 'http://pypi.python.org/pypi/vlc-ctrl/',
-	packages		= find_packages(),
+	packages		= ['vlc_ctrl'], 
 	include_package_data	= True,
 	scripts			= ['ez_setup.py'],
 	entry_points 		= entry_points,

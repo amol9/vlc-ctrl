@@ -1,7 +1,7 @@
 import re
 import textwrap
 
-from redlib.system import terminalsize
+from redlib.system import terminalsize, is_py3
 from redcmd import Subcommand, subcmd, CommandError
 
 from .player_list import PlayerList
@@ -119,8 +119,13 @@ class ClientSubcommands(Subcommand):
 
 		for name, value in info.items():
 			if value is None:
-				value = ''
-			lines = textwrap.wrap(value, col2)
+				value = b''
+
+			lines = None
+			if not is_py3():
+				lines = textwrap.wrap(value, col2)
+			else:
+				lines = textwrap.wrap(value.decode('utf-8'), col2)
 
 			print("{0:<10}: {1}".format(name, lines[0] if len(lines) > 0 else ''))
 			for line in lines[1:]:
