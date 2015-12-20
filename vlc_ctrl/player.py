@@ -139,8 +139,11 @@ class Player(object):
 		return self._prop.Get(iface, name)
 
 
-	def set_prop(self, name, value):
-		return self._prop.Set(self.player_interface, name, value)
+	def set_prop(self, name, value, iface=None):
+		if iface is None:
+			iface = self.player_interface
+
+		return self._prop.Set(iface, name, value)
 
 
 	def get_volume(self):
@@ -169,18 +172,29 @@ class Player(object):
 		metadata = self.get_prop('Metadata')
 		info = {}
 
-		info['album'] 	= str(metadata['xesam:album'])
-		info['title'] 	= str(metadata['xesam:title'])
-		info['artist'] 	= str(metadata['xesam:artist'][0]) if len(metadata['xesam:artist']) > 0 else None
-		info['length'] 	= int(int(metadata['vlc:length']) / 1000)
-		info['path']	= unquote(str(metadata['xesam:url']))
-		info['genre'] 	= str(metadata['xesam:genre'][0]) if len(metadata['xesam:genre']) > 0 else None
+		def unc(input):
+			if input is None:
+				return None
+			return input.encode('utf-8')
+
+		mget = lambda k : metadata.get(k, None)
+
+		info['album'] 	= unc(mget('xesam:album'))
+		info['title'] 	= unc(mget('xesam:title'))
+		info['artist'] 	= unc(mget('xesam:artist')[0]) if mget('xesam:artist') is not None and len(mget('xesam:artist')) > 0 else None
+		info['length'] 	= unc(str(int(mget('vlc:length') / 1000))) if mget('vlc:length') is not None else None
+		info['path']	= unquote(unc(mget('xesam:url')))
+		info['genre'] 	= unc(mget('xesam:genre')[0]) if mget('xesam:genre') is not None and len(mget('xesam:genre')) > 0 else None
 
 		return info
 		
 
 	def stop(self):
 		self._player.Stop()
+
+
+	def shuffle(self):
+		self.set_prop('Shuffle', True)
 
 
 	def quit(self, condition, retry, fade):

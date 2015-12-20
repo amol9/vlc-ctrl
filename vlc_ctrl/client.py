@@ -1,5 +1,7 @@
 import re
+import textwrap
 
+from redlib.system import terminalsize
 from redcmd import Subcommand, subcmd, CommandError
 
 from .player_list import PlayerList
@@ -14,7 +16,7 @@ class ClientSubcommands(Subcommand):
 
 	@subcmd
 	def play(self, path=None, random=False, include=None, exclude=None, include_file=None, exclude_file=None):
-		'''Play. Resume playback if paused. Optionally add new file/dir to the playlist or replace the current playlist.
+		'''Play. Resume playback if paused. Optionally add new file/dir to the playlist.
 
 		path: 		path to dir/file/url to be added
 		include:	pattern(s) to include files/dirs, like, *.mp3,*.mp4
@@ -48,6 +50,34 @@ class ClientSubcommands(Subcommand):
 
 
 	@subcmd
+	def prev(self):
+		'Go to previous track.'
+
+		self._players.prev()
+
+
+	@subcmd
+	def next(self):
+		'Go to next track.'
+
+		self._players.next()
+
+
+	@subcmd
+	def stop(self):
+		'Stop the playback.'
+
+		self._players.stop()
+
+
+	@subcmd
+	def shuffle(self):
+		'Shuffle the playlist.'
+
+		self._players.shuffle()
+
+
+	@subcmd
 	def volume(self, level, fade='0'):
 		'''Get/Set the volume level.
 
@@ -77,12 +107,24 @@ class ClientSubcommands(Subcommand):
 
 	@subcmd
 	def info(self):
-		'Get the info about current track.'
+		'Get info about the current track.'
 
 		info = self._players.track_info()
 
+		if all([v is None for v in info.values()]):
+			print('track metadata not available')
+
+		col1 = 10
+		col2 = terminalsize.get_terminal_size()[0] - col1 - 3
+
 		for name, value in info.items():
-			print("{0:<10}: {1}".format(name, value if value is not None else ''))
+			if value is None:
+				value = ''
+			lines = textwrap.wrap(value, col2)
+
+			print("{0:<10}: {1}".format(name, lines[0] if len(lines) > 0 else ''))
+			for line in lines[1:]:
+				print("{0:<10}  {1}".format('', line))
 
 	
 	@subcmd
