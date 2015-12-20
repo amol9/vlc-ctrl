@@ -133,7 +133,7 @@ class ClientSubcommands(Subcommand):
 
 	
 	@subcmd
-	def quit(self, condition=None, retry='1,0', fade=0):
+	def quit(self, condition=None, retry='1,0', fade='0'):
 		'''Quit vlc.
 		
 		condition: 	command to execute

@@ -34,13 +34,36 @@ Dependencies
 
 * python-dbus or python3-dbus
 
-  On Ubuntu: `>apt-get install python-dbus` or `apt-get install python3-dbus`
+  On Ubuntu: `>apt-get install python-dbus` or `>apt-get install python3-dbus`
 
 
 Usage
 =====
 
-See: `vlc-ctrl -h`
+* Pause::
+
+    vlc-ctrl pause
+
+* Play a directory:: 
+
+    vlc-ctrl play -p /home/user/music
+
+* Increase volume 10%:: 
+  
+    vlc-ctrl volume +10%
+    vlc-ctrl volume +0.1
+
+* Quit when return code of "command" is 0, retrying the command at most 5 times at 30s intervals and fade out in 10s::
+
+    vlc-ctrl quit -c command -r 5,30 -f 10
+
+* Get info on currently playing track::
+  
+    vlc-ctrl info
+
+* For more commands, see:: 
+  
+    vlc-ctrl -h
 
 
 Download

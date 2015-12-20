@@ -9,7 +9,7 @@ import mimetypes
 from subprocess import Popen
 
 from redlib.system import CronDBus, CronDBusError, in_cron, sys_command, DEVNULL
-from redlib.misc import Retry
+from redlib.misc import Retry, log
 
 
 class PlayerError(Exception):
