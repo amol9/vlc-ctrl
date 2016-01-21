@@ -1,7 +1,7 @@
 import logging
 
 from redcmd import CommandLine, CommandLineError
-from redlib.misc import log
+from redlib.api.misc import log
 
 from .client import ClientSubcommands
 from .version import __version__

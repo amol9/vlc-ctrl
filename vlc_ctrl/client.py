@@ -1,7 +1,7 @@
 import re
 import textwrap
 
-from redlib.system import terminalsize, is_py3
+from redlib.api.system import get_terminal_size, is_py3
 from redcmd import Subcommand, subcmd, CommandError
 
 from .player_list import PlayerList
@@ -115,7 +115,7 @@ class ClientSubcommands(Subcommand):
 			print('track metadata not available')
 
 		col1 = 10
-		col2 = terminalsize.get_terminal_size()[0] - col1 - 3
+		col2 = get_terminal_size()[0] - col1 - 3
 
 		for name, value in info.items():
 			if value is None:

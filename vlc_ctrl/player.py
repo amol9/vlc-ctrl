@@ -8,8 +8,8 @@ import os
 import mimetypes
 from subprocess import Popen
 
-from redlib.system import CronDBus, CronDBusError, in_cron, sys_command, DEVNULL
-from redlib.misc import Retry, log
+from redlib.api.system import CronDBus, CronDBusError, in_cron, sys_command, DEVNULL
+from redlib.api.misc import Retry, log
 
 
 class PlayerError(Exception):
