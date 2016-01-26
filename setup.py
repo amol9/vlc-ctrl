@@ -5,12 +5,13 @@ import platform
 import sys
 from setuptools import setup, find_packages
 
+from rc_setup import setup_autocomp
+
 from vlc_ctrl.version import __version__
 
 
 entry_points = {}
 entry_points['console_scripts'] = ['vlc-ctrl=vlc_ctrl.main:main']
-
 
 setup(	
 	name			= 'vlc-ctrl',
@@ -21,7 +22,7 @@ setup(
 	url			= 'http://pypi.python.org/pypi/vlc-ctrl/',
 	packages		= ['vlc_ctrl'], 
 	include_package_data	= True,
-	scripts			= ['ez_setup.py'],
+	scripts			= ['ez_setup.py', 'rc_setup.py'],
 	entry_points 		= entry_points,
 	install_requires	= ['redlib', 'redcmd', 'six'],
 	classifiers		= [
@@ -38,4 +39,7 @@ setup(
 					'Topic :: Multimedia :: Video'
 				]
 )
+
+
+setup_autocomp('vlc_ctrl.client', 'vlc-ctrl', _to_hyphen=True)
 

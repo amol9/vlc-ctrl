@@ -2,7 +2,7 @@ import re
 import textwrap
 
 from redlib.api.system import get_terminal_size, is_py3
-from redcmd import Subcommand, subcmd, CommandError
+from redcmd.api import Subcommand, subcmd, CommandError
 
 from .player_list import PlayerList
 from .filter import Filter

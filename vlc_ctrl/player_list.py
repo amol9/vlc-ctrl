@@ -1,7 +1,7 @@
 from time import sleep
 
 from .player import Player, PlayerError
-from redcmd import CommandError
+from redcmd.api import CommandError
 
 
 class PlayerListError(Exception):
