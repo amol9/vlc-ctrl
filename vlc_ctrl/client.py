@@ -2,7 +2,7 @@ import re
 import textwrap
 
 from redlib.api.system import get_terminal_size, is_py3
-from redcmd.api import Subcommand, subcmd, CommandError
+from redcmd.api import Subcommand, subcmd, CommandError, PathArg
 
 from .player_list import PlayerList
 from .filter import Filter
@@ -15,7 +15,7 @@ class ClientSubcommands(Subcommand):
 
 
 	@subcmd
-	def play(self, path=None, random=False, include=None, exclude=None, include_file=None, exclude_file=None):
+	def play(self, path=PathArg(opt=True), random=False, include=None, exclude=None, include_file=PathArg(opt=True), exclude_file=PathArg(opt=True)):
 		'''Play. Resume playback if paused. Optionally add new file/dir to the playlist.
 
 		path: 		path to dir/file/url to be added

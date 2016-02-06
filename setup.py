@@ -24,7 +24,7 @@ setup(
 	include_package_data	= True,
 	scripts			= ['ez_setup.py', 'rc_setup.py'],
 	entry_points 		= entry_points,
-	install_requires	= ['redlib', 'redcmd', 'six'],
+	install_requires	= ['redlib>=1.1.0', 'redcmd>=1.1.2', 'six'],
 	classifiers		= [
 					'Development Status :: 4 - Beta',
 					'Environment :: Console',

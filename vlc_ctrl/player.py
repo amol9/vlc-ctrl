@@ -7,6 +7,7 @@ from os.path import join as joinpath, exists, isdir, isfile
 import os
 import mimetypes
 from subprocess import Popen
+import shlex
 
 from redlib.api.system import CronDBus, CronDBusError, in_cron, sys_command, DEVNULL
 from redlib.api.misc import Retry, log
@@ -75,28 +76,30 @@ class Player(object):
 
 			
 	def add(self, path, filter):
-		if not exists(path):
-			raise PlayerError('no such path: %s'%path)
+		uqpath = shlex.split(path)[0]
 
-		if isfile(path):
-			if self.mime_type_supported(path):
-				self._tracklist.AddTrack('file://' + path, self.obj_no_track, True)
+		if not exists(uqpath):
+			raise PlayerError('no such path: %s'%uqpath)
+
+		if isfile(uqpath):
+			if self.mime_type_supported(uqpath):
+				self._tracklist.AddTrack('file://' + uqpath, self.obj_no_track, True)
 			return
 
-		elif isdir(path):
+		elif isdir(uqpath):
 			if filter.random:
 				choices = []
-				for root, dirs, files in os.walk(path):
+				for root, dirs, files in os.walk(uqpath):
 					choices.extend(filter.filter_list(dirs))
 					choices.extend(filter.filter_list(files))
 					break
 
-				path = joinpath(path, random.choice(choices))
+				uqpath = joinpath(uqpath, random.choice(choices))
 				filter.random = False
-				self.add(path, filter)
+				self.add(uqpath, filter)
 				return
 
-		for root, _, files in os.walk(path):
+		for root, _, files in os.walk(uqpath):
 			for f in files:
 				if filter.filter(f):
 					self.add(joinpath(root, f), None)
