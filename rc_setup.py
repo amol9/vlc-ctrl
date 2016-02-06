@@ -1,11 +1,10 @@
 from importlib import import_module
 import sys
-
-from redlib.api.system import is_linux
+import platform
 
 
 def setup_autocomp(commands_module, command_name, _to_hyphen=False):
-	if not is_linux():
+	if platform.system() != 'Linux':
 		return
 
 	args = sys.argv
