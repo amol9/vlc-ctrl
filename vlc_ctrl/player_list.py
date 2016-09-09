@@ -1,4 +1,3 @@
-from time import sleep
 
 from .player import Player, PlayerError
 from redcmd.api import CommandError
@@ -28,25 +27,22 @@ class PlayerList:
 		if attr is None:
 			raise PlayerListError('no such member: %s'%name)
 
+
+		def player_error_wrapped(method, *args, **kwargs):
+			try:
+				return method(*args, **kwargs)
+			except PlayerError as e:
+				raise PlayerListError(e)
+
 		def wrapped(*args, **kwargs):
 			try:
-				self._list[0].get_dbus_interface()
-			except PlayerError as e:
+				player_error_wrapped(self._list[0].get_dbus_interface)
+			except PlayerListError:
 				if attr.__name__ in self.launch_on_no_service:
-					self._list[0].launch()
-					sleep(0.2)
-					self._list[0].get_dbus_interface()
-				else:
-					print(e)
-					raise CommandError()
+					player_error_wrapped(self._list[0].launch)
+					player_error_wrapped(self._list[0].get_dbus_interface, wait=True)
 
-			try:
-				result = attr(*args, **kwargs)
-			except PlayerError as e:
-				print(e)
-				raise CommandError()
-
-			return result
+			return player_error_wrapped(attr, *args, **kwargs)
 
 		return wrapped
 				

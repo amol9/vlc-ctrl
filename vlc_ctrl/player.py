@@ -28,6 +28,8 @@ class Player(object):
 
 	obj_no_track		= '/org/mpris/MediaPlayer2/TrackList/NoTrack'
 
+	launch_wait		= 10
+
 	def __init__(self):
 		self._player 	= None
 		self._prop 	= None
@@ -35,7 +37,6 @@ class Player(object):
 		self._tracklist = None
 
 		self.setup_crondbus()
-		#self.get_dbus_interface()
 
 		self._mime_types = None
 
@@ -46,12 +47,16 @@ class Player(object):
 			self._crondbus.setup()
 
 
-	def get_dbus_interface(self):
-		try:
-			player_obj = dbus.SessionBus().get_object(self.service_name, self.object_path)
-		except DBusException as e:
-			print(e)
-			raise PlayerError('vlc is not running')
+	def get_dbus_interface(self, wait=False):
+		retry_count = self.launch_wait if wait else 1
+		retry = Retry(retries=retry_count, delay=1, exp_bkf=False, final_exc=PlayerError('vlc is not running'))
+
+		while retry.left():
+			try:
+				player_obj = dbus.SessionBus().get_object(self.service_name, self.object_path)
+				retry.cancel()
+			except DBusException as e:
+				retry.retry()
 
 		self._player 	= dbus.Interface(player_obj, dbus_interface=self.player_interface)
 		self._tracklist = dbus.Interface(player_obj, dbus_interface=self.tracklist_interface)

@@ -4,7 +4,7 @@ import textwrap
 from redlib.api.system import get_terminal_size, is_py3
 from redcmd.api import Subcommand, subcmd, CommandError, PathArg
 
-from .player_list import PlayerList
+from .player_list import PlayerList, PlayerListError
 from .filter import Filter
 
 
@@ -12,6 +12,14 @@ class ClientSubcommands(Subcommand):
 
 	def __init__(self):
 		self._players = PlayerList()
+
+
+	def player_list_error_wrapped(self, method, *args, **kwargs):
+		try:
+			return method(*args, **kwargs)
+		except PlayerListError as e:
+			print(e)
+			raise CommandError()
 
 
 	@subcmd
@@ -32,49 +40,49 @@ class ClientSubcommands(Subcommand):
 		if path is not None:
 			filter = Filter(include=include, exclude=exclude, include_file=include_file, exclude_file=exclude_file, random=random)
 
-		self._players.play(path, filter)
+		self.player_list_error_wrapped(self._players.play, path, filter)
 
 
 	@subcmd
 	def pause(self):
 		'Pause the playback.'
 
-		self._players.pause()
+		self.player_list_error_wrapped(self._players.pause)
 
 
 	@subcmd
 	def toggle(self):
 		'Toggle between play and pause.'
 
-		self._players.toggle()
+		self.player_list_error_wrapped(self._players.toggle)
 
 
 	@subcmd
 	def prev(self):
 		'Go to previous track.'
 
-		self._players.prev()
+		self.player_list_error_wrapped(self._players.prev)
 
 
 	@subcmd
 	def next(self):
 		'Go to next track.'
 
-		self._players.next()
+		self.player_list_error_wrapped(self._players.next)
 
 
 	@subcmd
 	def stop(self):
 		'Stop the playback.'
 
-		self._players.stop()
+		self.player_list_error_wrapped(self._players.stop)
 
 
 	@subcmd
 	def shuffle(self):
 		'Shuffle the playlist.'
 
-		self._players.shuffle()
+		self.player_list_error_wrapped(self._players.shuffle)
 
 
 	@subcmd
@@ -95,21 +103,21 @@ class ClientSubcommands(Subcommand):
 		sign = match.group(1)
 
 		if sign == '+':
-			vol = self._players.get_volume() + vol
+			vol = self.player_list_error_wrapped(self._players.get_volume) + vol
 		elif sign == '-':
-			vol = self._players.get_volume() - vol
+			vol = self.player_list_error_wrapped(self._players.get_volume) - vol
 
 		match = self.validate_input("(\d+)", fade, 'fade value must be a number')
 		fade = int(match.group(1))
 
-		self._players.fade_volume(vol, fade)
+		self.player_list_error_wrapped(self._players.fade_volume, vol, fade)
 
 
 	@subcmd
 	def info(self):
 		'Get info about the current track.'
 
-		info = self._players.track_info()
+		info = self.player_list_error_wrapped(self._players.track_info)
 
 		if all([v is None for v in info.values()]):
 			print('track metadata not available')
@@ -149,7 +157,7 @@ class ClientSubcommands(Subcommand):
 		match = self.validate_input("(\d+)", fade, 'fade value must be a number')
 		fade = int(match.group(1))
 
-		self._players.quit(condition, retry, fade)
+		self.player_list_error_wrapped(self._players.quit, condition, retry, fade)
 
 
 	def validate_input(self, regex, input, err_msg):
